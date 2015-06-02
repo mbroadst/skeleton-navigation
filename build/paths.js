@@ -2,6 +2,7 @@ var path = require('path');
 
 var appRoot = 'src/';
 var outputRoot = 'dist/';
+var deployRoot = 'deploy/';
 
 module.exports = {
   root: appRoot,
@@ -9,6 +10,7 @@ module.exports = {
   html: appRoot + '**/*.html',
   style: 'styles/**/*.css',
   output: outputRoot,
+  deploy: deployRoot,
   sourceMapRelativePath: '../' + appRoot,
   doc:'./doc',
   e2eSpecsSrc: 'test/e2e/src/*.js',

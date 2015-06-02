@@ -2,16 +2,27 @@ var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     paths = require('../paths'),
     jspm = require('jspm'),
-    fs = require('fs');
+    fs = require('fs'),
+    del = require('del'),
+    vinylPaths = require('vinyl-paths'),
+    merge = require('merge-stream');
 
+gulp.task('deploy', function(callback) {
+  return runSequence(
+    'deploy-clean',
+    'clean',
+    ['build-system', 'build-html'],
+    'deploy-bundle',
+    'deploy-copy',
+    'deploy-unbundle',
+    callback
+  );
+});
 
-// gulp.task('deploy', function(callback) {
-//   return runSequence(
-//     'clean',
-//     ['build-system', 'build-html'],
-//     callback
-//   );
-// });
+gulp.task('deploy-clean', function() {
+  return gulp.src([paths.deploy])
+    .pipe(vinylPaths(del));
+});
 
 /**
  * Bundle aurelia-framework
@@ -19,6 +30,8 @@ var gulp = require('gulp'),
 gulp.task('deploy-bundle', function(done) {
   var distFile = 'app.js';
   var outputFile = paths.deploy + distFile;
+  if (!fs.existsSync(paths.deploy))
+    fs.mkdirSync(paths.deploy);
 
   var cmd = [
     '*',
@@ -37,4 +50,21 @@ gulp.task('deploy-bundle', function(done) {
       done();
     });
   });
+});
+
+gulp.task('deploy-copy', function() {
+  var baseFiles = gulp.src(['index.html', 'config.js'])
+    .pipe(gulp.dest(paths.deploy));
+
+  var jspmPackages = gulp.src(['jspm_packages/**/*'])
+    .pipe(gulp.dest(paths.deploy + 'jspm_packages'));
+
+  var styles = gulp.src(['styles/**/*'])
+    .pipe(gulp.dest(paths.deploy + 'styles'));
+
+  return merge(baseFiles, jspmPackages, styles);
+});
+
+gulp.task('deploy-unbundle', function() {
+  return jspm.unbundle();
 });
