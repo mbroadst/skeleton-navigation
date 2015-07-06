@@ -1,0 +1,8 @@
+<template>
+  <require from="my-element"></require>
+  <ul>
+    <li repeat.for="thing of things">
+      <my-element data.bind="thing"></my-element>
+    </li>
+  </ul>
+</template>
